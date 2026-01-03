@@ -1,7 +1,4 @@
-import datetime
-from zoneinfo import ZoneInfo
-
-from google.adk.agents import Agent
+from google.adk.agents import LlmAgent
 from google.adk.apps.app import App
 from google.adk.models import Gemini
 from google.genai import types
@@ -11,6 +8,8 @@ from mcp import StdioServerParameters
 
 import os
 import google.auth
+
+from .tools.web_search import web_search
 
 _, project_id = google.auth.default()
 os.environ["GOOGLE_CLOUD_PROJECT"] = project_id
@@ -33,14 +32,14 @@ yfinance_tools = McpToolset(
     # tool_filter=[]
 )
 
-root_agent = Agent(
+root_agent = LlmAgent(
     name="root_agent",
     model=Gemini(
         model="gemini-3-flash-preview",
         retry_options=types.HttpRetryOptions(attempts=3),
     ),
     instruction="You are a helpful AI assistant designed to provide accurate and useful information.",
-    tools=[yfinance_tools],
+    tools=[yfinance_tools, web_search],
 )
 
 app = App(root_agent=root_agent, name="app")
